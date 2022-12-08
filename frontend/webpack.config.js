@@ -4,10 +4,16 @@ const CopyPlugin = require("copy-webpack-plugin");
 
 module.exports = {
     entry: './index.js',
+    mode: "development",
     output: {
         filename: 'main.js',
         path: path.resolve(__dirname, 'dist'),
         clean: true,
+    },
+    devServer: {
+        static: '.dist',
+        compress: true,
+        port: 9000,
     },
     plugins: [
         new HtmlWebpackPlugin({
