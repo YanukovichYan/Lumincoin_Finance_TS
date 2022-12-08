@@ -15,7 +15,7 @@ module.exports = {
         }),
         new CopyPlugin({
             patterns: [
-                {from: "src/templates/auth", to: "templates"},
+                {from: "src/templates", to: "templates"},
                 {from: "index.css", to: "styles"},
                 {from: "src/static/images", to: "images"},
             ],

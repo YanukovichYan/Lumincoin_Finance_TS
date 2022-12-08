@@ -18,7 +18,7 @@ export class Router {
             {
                 route: '#/signup',
                 title: 'Регистрация',
-                template: 'src/templates/auth/signup.html',
+                template: '/templates/auth/signup.html',
                 load: () => {
                     new FormAuth('signup');
                 }
@@ -26,7 +26,7 @@ export class Router {
             {
                 route: '#/login',
                 title: 'Вход в систему',
-                template: 'src/templates/auth/login.html',
+                template: '/templates/auth/login.html',
                 load: () => {
                     new FormAuth('login');
                 }
@@ -34,7 +34,7 @@ export class Router {
             {
                 route: '#/',
                 title: 'Главная',
-                template: 'src/templates/main/main.html',
+                template: '/templates/main/main.html',
                 load: () => {
                     new Main()
                 }
@@ -42,7 +42,7 @@ export class Router {
             {
                 route: '#/income',
                 title: 'Доходы',
-                template: 'src/templates/incomes-and-expenses/category.html',
+                template: '/templates/incomes-and-expenses/category.html',
                 load: () => {
                     new Category('income');
                 }
@@ -50,7 +50,7 @@ export class Router {
             {
                 route: '#/income/create-income',
                 title: 'Создание категории доходов',
-                template: 'src/templates/incomes-and-expenses/create-category.html',
+                template: '/templates/incomes-and-expenses/create-category.html',
                 load: () => {
                     new Category('create-income');
                 }
@@ -58,7 +58,7 @@ export class Router {
             {
                 route: '#/income/edit-income',
                 title: 'Редактирование категории доходов',
-                template: 'src/templates/incomes-and-expenses/edit-category.html',
+                template: '/templates/incomes-and-expenses/edit-category.html',
                 load: () => {
                     new Edit('income');
                 }
@@ -66,7 +66,7 @@ export class Router {
             {
                 route: '#/expense',
                 title: 'Расходы',
-                template: 'src/templates/incomes-and-expenses/category.html',
+                template: '/templates/incomes-and-expenses/category.html',
                 load: () => {
                     new Category('expense');
                 }
@@ -74,7 +74,7 @@ export class Router {
             {
                 route: '#/expense/create-expense',
                 title: 'Создание категории расходов',
-                template: 'src/templates/incomes-and-expenses/create-category.html',
+                template: '/templates/incomes-and-expenses/create-category.html',
                 load: () => {
                     new Category('create-expense');
                 }
@@ -82,7 +82,7 @@ export class Router {
             {
                 route: '#/expense/edit-expense',
                 title: 'Редактирование категории расходов',
-                template: 'src/templates/incomes-and-expenses/edit-category.html',
+                template: '/templates/incomes-and-expenses/edit-category.html',
                 load: () => {
                     new Edit('expense');
                 }
@@ -90,7 +90,7 @@ export class Router {
             {
                 route: '#/table-categories',
                 title: 'Доходы и расходы',
-                template: 'src/templates/table-categories/table-categories.html',
+                template: '/templates/table-categories/table-categories.html',
                 load: () => {
                     new TableCategories();
                 }
@@ -98,7 +98,7 @@ export class Router {
             {
                 route: '#/table-categories/create_income-or-expenses',
                 title: 'Создание дохода/расхода',
-                template: 'src/templates/table-categories/form.html',
+                template: '/templates/table-categories/form.html',
                 load: () => {
                     new Form('create');
                 }
@@ -106,7 +106,7 @@ export class Router {
             {
                 route: '#/table-categories/edit_income-or-expense',
                 title: 'Редактирование дохода/расхода',
-                template: 'src/templates/table-categories/form.html',
+                template: '/templates/table-categories/form.html',
                 load: () => {
                     new Form('edit');
                 }
