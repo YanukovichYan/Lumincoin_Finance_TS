@@ -1,7 +1,7 @@
-import {CustomHttp} from "../../../services/custom-http.js";
-import config from "../../../config/config.js";
-import {Sidebar} from "../sidebar.js";
-import {SeparationCategories} from "../../../services/separationCategories.js";
+import {CustomHttp} from "../../../services/custom-http";
+import config from "../../../config/config";
+import {Sidebar} from "../sidebar";
+import {SeparationCategories} from "../../../services/separationCategories";
 
 export class Category {
 

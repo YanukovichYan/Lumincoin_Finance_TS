@@ -1,10 +1,10 @@
-import {Category} from "../src/scripts/incomes-and-expenses/category.js";
-import {Auth} from "../services/auth.js";
-import {Edit} from "../src/scripts/incomes-and-expenses/edit.js";
-import {TableCategories} from "../src/scripts/table-categories/table-categories.js";
-import {Form} from "../src/scripts/table-categories/form.js";
-import {Main} from "../src/scripts/main/main.js";
-import {FormAuth} from "../src/scripts/auth/form-auth.js";
+import {Category} from "../src/scripts/incomes-and-expenses/category.ts";
+import {Auth} from "../services/auth.ts";
+import {Edit} from "../src/scripts/incomes-and-expenses/edit.ts";
+import {TableCategories} from "../src/scripts/table-categories/table-categories.ts";
+import {Form} from "../src/scripts/table-categories/form.ts";
+import {Main} from "../src/scripts/main/main.ts";
+import {FormAuth} from "../src/scripts/auth/form-auth.ts";
 
 export class Router {
     constructor() {

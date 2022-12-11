@@ -1,6 +1,6 @@
-import config from "../../../config/config.js";
-import {CustomHttp} from "../../../services/custom-http.js";
-import {Sidebar} from "../sidebar.js";
+import config from "../../../config/config";
+import {CustomHttp} from "../../../services/custom-http";
+import {Sidebar} from "../sidebar";
 
 export class Main {
 
