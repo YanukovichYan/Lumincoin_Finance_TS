@@ -1,8 +1,20 @@
 import {CustomHttp} from "../../../services/custom-http";
 import config from "../../../config/config";
-import {Sidebar} from "../sidebar.ts";
+import {Sidebar} from "../sidebar";
+import {DefaultResponseType, Operations} from "./types";
 
 export class TableCategories {
+
+    readonly dateToday: string
+    private filterValue: string
+    private operations: Operations[] | null
+    private removeOptionId: number | null
+    private btnEditId: number | null
+    private dateInterval: string | ''
+    private btnFilterClick: HTMLElement | null
+    private optionById: Operations | null
+    private value: number | null
+    private tbodyElement: HTMLElement | null
 
     constructor() {
         this.dateToday = `${new Date().getFullYear()}-${(new Date().getMonth()) + 1}-${new Date().getDate()}`
@@ -14,25 +26,34 @@ export class TableCategories {
         this.btnFilterClick = null
         this.optionById = null
         this.value = null
+        this.tbodyElement = document.getElementById('tbody')
         this.init()
     }
 
-    init() {
-        document.getElementById('create-income').onclick = () => location.href = `#/table-categories/create_income-or-expenses?operations=income`
+    private init(): void {
+        const createIncomeElement: HTMLElement | null = document.getElementById('create-income')
+        const createExpenseElement: HTMLElement | null = document.getElementById('create-expense')
 
-        document.getElementById('create-expense').onclick = () => location.href = `#/table-categories/create_income-or-expenses?operations=expense`
+        if (createIncomeElement) {
+            createIncomeElement.onclick = () => location.href = `#/table-categories/create_income-or-expenses?operations=income`
+        }
 
-        const dateFrom = document.getElementById('date-from')
-        const dateTo = document.getElementById('date-to')
-        const dateInterval = document.getElementById('date-interval')
+        if (createExpenseElement) {
+            createExpenseElement.onclick = () => location.href = `#/table-categories/create_income-or-expenses?operations=expense`
+        }
 
-        dateInterval.onchange = () => {
-            const dateInterval = `&dateFrom=${dateFrom.value}&dateTo=${dateTo.value}`
-            if (dateFrom.value && dateTo.value) {
-                this.dateInterval = dateInterval
-                this.getDataTable()
-                console.log(this.dateInterval)
-                console.log('Получили данные, отправляем запрос')
+        const dateFrom: HTMLInputElement | null = document.getElementById('date-from') as HTMLInputElement
+        const dateTo: HTMLInputElement | null = document.getElementById('date-to') as HTMLInputElement
+        const dateIntervalElement: HTMLElement | null = document.getElementById('date-interval')
+
+        if (dateIntervalElement) {
+            dateIntervalElement.onchange = () => {
+                if (dateFrom.value && dateTo.value) {
+                    this.dateInterval = `&dateFrom=${dateFrom.value}&dateTo=${dateTo.value}`
+                    this.getDataTable()
+
+                    console.log('Получили данные, отправляем запрос')
+                }
             }
         }
         this.getDataTable()
@@ -40,18 +61,21 @@ export class TableCategories {
         this.showFilterBtn()
     }
 
-    async getDataTable() {
+    private async getDataTable(): Promise<void> {
         await Sidebar.getBalance()
 
-        if (this.filterValue === 'interval' && this.dateInterval === '') {
+        if (this.dateInterval === '' && this.filterValue === '') {
             return
         }
+
         try {
-            const result = await CustomHttp.request(`${config.host}/operations?period=${this.filterValue}${this.dateInterval}`)
-            // console.log(result)
+            const result: Operations[] | [] = await CustomHttp.request(`${config.host}/operations?period=${!this.dateInterval ? this.filterValue : ''}${this.dateInterval}`)
+
             if (result) {
                 this.operations = result
-                document.getElementById('tbody').innerHTML = ' '
+                if (this.tbodyElement) {
+                    this.tbodyElement.innerHTML = ' '
+                }
                 this.showTable()
             }
             if (result.length === 0) {
@@ -62,61 +86,59 @@ export class TableCategories {
         }
     }
 
-    showTable() {
+    private showTable(): void {
         if (this.operations) {
 
-            const tbody = document.getElementById('tbody')
+            this.operations.forEach((operation: Operations, index: number) => {
+                const tr: HTMLElement = document.createElement('tr')
 
-            this.operations.forEach((operation, index) => {
-                const tr = document.createElement('tr')
-
-                const number = document.createElement('td')
+                const number: HTMLElement = document.createElement('td')
                 number.className = `text-center fw-bold`
                 number.innerText = `${index + 1} `
                 number.innerText = `${index + 1} `
 
-                const type = document.createElement('td')
+                const type: HTMLElement = document.createElement('td')
                 type.className = operation.type === 'income' ? 'text-center text-success' : 'text-center text-danger'
                 type.innerText = operation.type === 'income' ? 'доход' : 'расход'
 
-                const category = document.createElement('td')
+                const category: HTMLElement = document.createElement('td')
                 category.className = 'text-center'
                 // this.createBlock('td', `text-center`)
-                category.innerText = operation.category || null
+                category.innerText = operation.category || ''
 
-                const amount = document.createElement('td')
+                const amount: HTMLElement = document.createElement('td')
                 amount.className = `text-center`
                 amount.innerText = `${operation.amount} $`
 
-                const validDate = operation.date.split('-')
-                const date = document.createElement('td')
+                const validDate: string[] = operation.date.split('-')
+                const date: HTMLElement = document.createElement('td')
                 date.className = `text-center`
                 date.innerText = `${validDate[2]}.${validDate[1]}.${validDate[0]}`
 
-                const comment = document.createElement('td')
+                const comment: HTMLElement = document.createElement('td')
                 comment.className = `text-center`
                 comment.innerText = operation.comment
 
-                const trash = document.createElement('td')
+                const trash: HTMLElement = document.createElement('td')
                 trash.className = `text-center`
                 trash.setAttribute('role', 'button')
                 trash.setAttribute('data-name', 'delete')
-                trash.setAttribute('data-id', operation.id)
+                trash.setAttribute('data-id', operation.id.toString())
                 trash.setAttribute('data-bs-target', "#exampleModal")
                 trash.setAttribute('data-bs-toggle', "modal")
 
-                const trashImg = document.createElement('img')
+                const trashImg: HTMLElement = document.createElement('img')
                 trashImg.setAttribute('src', '/images/trash-icon.png')
                 trashImg.setAttribute('alt', 'trash')
                 trash.appendChild(trashImg)
 
-                const edit = document.createElement('td')
+                const edit: HTMLElement = document.createElement('td')
                 edit.className = `text-center`
                 edit.setAttribute('role', 'button')
                 edit.setAttribute('data-name', 'edit')
-                edit.setAttribute('data-id', operation.id)
+                edit.setAttribute('data-id', operation.id.toString())
 
-                const editImg = document.createElement('img')
+                const editImg: HTMLElement = document.createElement('img')
                 editImg.setAttribute('src', '/images/pen-icon.png')
                 editImg.setAttribute('alt', 'pen')
                 edit.appendChild(editImg)
@@ -130,26 +152,29 @@ export class TableCategories {
                 tr.appendChild(trash)
                 tr.appendChild(edit)
 
-                tbody.appendChild(tr)
+                if (this.tbodyElement) {
+                    this.tbodyElement.appendChild(tr)
+                }
             })
         }
         this.removeOption()
         this.edit()
     }
 
-    showThead() {
-        config.theadTitle.forEach(ttl => {
-            const title = document.createElement('th')
+    private showThead(): void {
+        config.theadTitle.forEach((ttl: string) => {
+            const title: HTMLElement = document.createElement('th')
+            const theadElement = document.getElementById('thead')
             title.innerText = ttl
             title.className = 'text-center'
-            document.getElementById('thead').appendChild(title)
+            if (theadElement) theadElement.appendChild(title)
         })
     }
 
-    showFilterBtn() {
-        let active = true;
-        config.dataBtn.forEach((btn, index) => {
-            const filterBtn = document.createElement('button')
+    private showFilterBtn(): void {
+        let active: boolean = true;
+        config.dataBtn.forEach((btn: string, index: number) => {
+            const filterBtn: HTMLElement = document.createElement('button')
             filterBtn.innerText = btn
             filterBtn.setAttribute('data-name', 'filter')
             filterBtn.className = 'btn btn-light border border-secondary me-3 px-3'
@@ -164,8 +189,8 @@ export class TableCategories {
                 this.btnFilterClick = filterBtn
                 this.dateInterval = ''
 
-                let allFilterBtn = document.querySelectorAll('button[data-name="filter"]')
-                allFilterBtn.forEach(el => {
+                let allFilterBtn: NodeListOf<Element> | null = document.querySelectorAll('button[data-name="filter"]')
+                allFilterBtn.forEach((el: Element) => {
                     el.classList.add('btn-light')
                     el.classList.remove('btn-secondary')
                 })
@@ -173,16 +198,19 @@ export class TableCategories {
                 this.btnFilterClick.classList.add('btn-secondary')
                 this.btnFilterClick.classList.remove('btn-light')
 
-                document.getElementById('tbody').innerHTML = ' '
+                if (this.tbodyElement) this.tbodyElement.innerHTML = ' '
 
                 this.selectOperationsWithFilter()
             })
-            document.getElementById('btn-wrapper').appendChild(filterBtn)
+            const btnWrapperElement: HTMLElement | null = document.getElementById('btn-wrapper')
+            if (btnWrapperElement) {
+                btnWrapperElement.appendChild(filterBtn)
+            }
         })
     }
 
-    selectOperationsWithFilter() {
-        switch (this.btnFilterClick.innerText) {
+    private selectOperationsWithFilter(): void {
+        switch (this.btnFilterClick?.innerText) {
             case 'Сегодня':
                 this.filterValue = `interval&dateFrom=${this.dateToday}&dateTo=${this.dateToday}`
                 break
@@ -213,50 +241,51 @@ export class TableCategories {
     //     return block
     // }
 
-    async removeOption() {
-        let removeOptions = document.querySelectorAll('td[data-name="delete"]')
+    private async removeOption(): Promise<void> {
+        const removeOptions: NodeListOf<Element> | null = document.querySelectorAll('td[data-name="delete"]')
+        const confirmDeleteElement = document.getElementById('confirm-delete')
 
-        removeOptions.forEach(option => {
+        removeOptions.forEach((option: Element) => {
             option.addEventListener('click', () => {
-                this.removeOptionId = option.getAttribute('data-id')
+                this.removeOptionId = Number(option.getAttribute('data-id'))
             })
         })
 
-        document.getElementById('confirm-delete').onclick = () => {
-            this.getOptionsById()
-            this.removeOptionRequest()
+        if (confirmDeleteElement) {
+            confirmDeleteElement.onclick = () => {
+                this.getOptionsById()
+                this.removeOptionRequest()
+            }
         }
     }
 
-    async getOptionsById() {
+    private async getOptionsById(): Promise<void> {
         try {
-            const result = await CustomHttp.request(`${config.host}/operations/${this.removeOptionId}`)
+            const result: Operations | DefaultResponseType = await CustomHttp.request(`${config.host}/operations/${this.removeOptionId}`)
             if (result) {
-                if (result.error) {
-                    alert(result.message)
+                if ((result as DefaultResponseType).error) {
+                    alert((result as DefaultResponseType).message)
                 }
-                this.optionById = result
-                console.log('this.optionById', this.optionById)
+                this.optionById = result as Operations
             }
         } catch (e) {
             console.log(e)
         }
     }
 
-    async removeOptionRequest() {
-        const currentBalance = await Sidebar.getBalance()
-        console.log('currentBalance', currentBalance)
+    private async removeOptionRequest(): Promise<void> {
+        const currentBalance: number = await Sidebar.getBalance()
 
-        if (this.optionById?.type === 'income') {
-            this.value = currentBalance - this.optionById.amount
-        } else {
-            this.value = currentBalance + this.optionById.amount
+        if (this.optionById) {
+            if (this.optionById?.type === 'income') {
+                this.value = currentBalance - this.optionById.amount
+            } else {
+                this.value = currentBalance + this.optionById.amount
+            }
         }
-        console.log(this.value)
-        console.log(this.optionById.amount)
 
         try {
-            const result = await CustomHttp.request(`${config.host}/operations/${this.removeOptionId}`, 'DELETE')
+            const result: DefaultResponseType = await CustomHttp.request(`${config.host}/operations/${this.removeOptionId}`, 'DELETE')
             if (result) {
                 if (!result.error) {
                     console.log(result.message)
@@ -269,12 +298,12 @@ export class TableCategories {
         }
     }
 
-    edit() {
-        const editButtons = document.querySelectorAll('td[data-name="edit"]')
+    private edit(): void {
+        const editButtons: NodeListOf<Element> | null = document.querySelectorAll('td[data-name="edit"]')
 
-        editButtons.forEach(btn => {
+        editButtons.forEach((btn: Element) => {
             btn.addEventListener('click', () => {
-                this.btnEditId = btn.getAttribute('data-id')
+                this.btnEditId = Number(btn.getAttribute('data-id'))
                 location.href = `#/table-categories/edit_income-or-expense?id=${this.btnEditId}`
             })
         })
