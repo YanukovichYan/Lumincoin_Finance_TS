@@ -1,8 +1,10 @@
+import {CategoryType, Operation, SeparationCatNewObgType} from "../types";
+
 export class SeparationCategories {
 
-    static getSeparateCategory(operations, removeCardId, categories) {
+    static getSeparateCategory(operations: Operation[], removeCardId: number, categories: CategoryType[]): number {
 
-        const newObject = operations.reduce((object, operation) => {
+        const newObject: SeparationCatNewObgType = operations.reduce((object: SeparationCatNewObgType, operation: Operation): SeparationCatNewObgType => {
             if (object[operation.category]) {
                 object[operation.category].push(operation)
             } else {
@@ -11,24 +13,14 @@ export class SeparationCategories {
             return object
         }, {})
 
-        console.log('categories', categories)
-
-        let foundCategory = categories.find(category => category.id === +(removeCardId))
-
-        console.log('foundCategory', foundCategory)
-
-        console.log('removeCardId', removeCardId)
-
-        console.log('newObject', newObject)
-
-        console.log('IT', newObject[foundCategory.title])
+        let foundCategory: CategoryType | undefined = categories.find(category => category.id === +(removeCardId))
 
         let amount = 0
-        newObject[foundCategory.title]?.forEach(el => {
-            amount += el.amount
-        })
-        console.log('amount', amount)
-        // console.log('Object.entries(income)', Object.entries(newObject))
+        if (foundCategory) {
+            newObject[foundCategory.title]?.forEach(el => {
+                amount += el.amount
+            })
+        }
 
         return amount
     }

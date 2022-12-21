@@ -1,20 +1,20 @@
 import {CustomHttp} from "../../../services/custom-http";
 import config from "../../../config/config";
 import {Sidebar} from "../sidebar";
-import {DefaultResponseType, Operations} from "./types";
+import {DefaultResponseType, Operation} from "../../../types";
 
 export class TableCategories {
 
     readonly dateToday: string
     private filterValue: string
-    private operations: Operations[] | null
+    private operations: Operation[] | null
     private removeOptionId: number | null
     private btnEditId: number | null
     private dateInterval: string | ''
     private btnFilterClick: HTMLElement | null
-    private optionById: Operations | null
+    private optionById: Operation | null
     private value: number | null
-    private tbodyElement: HTMLElement | null
+    readonly tbodyElement: HTMLElement | null
 
     constructor() {
         this.dateToday = `${new Date().getFullYear()}-${(new Date().getMonth()) + 1}-${new Date().getDate()}`
@@ -69,7 +69,7 @@ export class TableCategories {
         }
 
         try {
-            const result: Operations[] | [] = await CustomHttp.request(`${config.host}/operations?period=${!this.dateInterval ? this.filterValue : ''}${this.dateInterval}`)
+            const result: Operation[] | [] = await CustomHttp.request(`${config.host}/operations?period=${!this.dateInterval ? this.filterValue : ''}${this.dateInterval}`)
 
             if (result) {
                 this.operations = result
@@ -89,7 +89,7 @@ export class TableCategories {
     private showTable(): void {
         if (this.operations) {
 
-            this.operations.forEach((operation: Operations, index: number) => {
+            this.operations.forEach((operation: Operation, index: number) => {
                 const tr: HTMLElement = document.createElement('tr')
 
                 const number: HTMLElement = document.createElement('td')
@@ -261,12 +261,12 @@ export class TableCategories {
 
     private async getOptionsById(): Promise<void> {
         try {
-            const result: Operations | DefaultResponseType = await CustomHttp.request(`${config.host}/operations/${this.removeOptionId}`)
+            const result: Operation | DefaultResponseType = await CustomHttp.request(`${config.host}/operations/${this.removeOptionId}`)
             if (result) {
                 if ((result as DefaultResponseType).error) {
                     alert((result as DefaultResponseType).message)
                 }
-                this.optionById = result as Operations
+                this.optionById = result as Operation
             }
         } catch (e) {
             console.log(e)
@@ -274,9 +274,9 @@ export class TableCategories {
     }
 
     private async removeOptionRequest(): Promise<void> {
-        const currentBalance: number = await Sidebar.getBalance()
+        const currentBalance: number | null = await Sidebar.getBalance()
 
-        if (this.optionById) {
+        if (this.optionById && currentBalance) {
             if (this.optionById?.type === 'income') {
                 this.value = currentBalance - this.optionById.amount
             } else {
@@ -289,7 +289,9 @@ export class TableCategories {
             if (result) {
                 if (!result.error) {
                     console.log(result.message)
-                    await Sidebar.updateBalance(this.value)
+                    if (this.value) {
+                        await Sidebar.updateBalance(this.value)
+                    }
                     await this.getDataTable()
                 }
             }

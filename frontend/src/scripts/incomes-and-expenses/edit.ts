@@ -1,39 +1,54 @@
 import {CustomHttp} from "../../../services/custom-http";
 import config from "../../../config/config";
 import {Sidebar} from "../sidebar";
+import {CategoryType, DefaultResponseType} from "../../../types";
 
 export class Edit {
 
-    constructor(page) {
+    readonly page: 'income' | 'expense'
+    readonly editCardId: number
+    readonly editInput: HTMLElement | null
+    private newValueOnInput: string | ''
+
+    constructor(page: 'income' | 'expense') {
         this.page = page
-        this.editCardId = window.location.hash.split('=')[1]
+        this.editCardId = Number(window.location.hash.split('=')[1])
         this.editInput = document.getElementById('edit-input')
-        this.newValueOnInput = null
+        this.newValueOnInput = ''
 
         this.init()
     }
 
-    async init() {
+    private async init(): Promise<void> {
+        const saveEditBtn = document.getElementById('save-edit-btn')
+        const cancelBtn = document.getElementById('cancel-btn')
+
         try {
-            const result = await CustomHttp.request(`${config.host}/categories/${this.page}/${this.editCardId}`)
-            if (result) {
-                this.editInput.value = result.title
+            const result: CategoryType = await CustomHttp.request(`${config.host}/categories/${this.page}/${this.editCardId}`)
+            if (result && this.editInput) {
+                (this.editInput as HTMLInputElement).value = result.title
                 await Sidebar.getBalance()
             }
         } catch (e) {
             console.log(e)
         }
 
-        this.editInput.onchange = (e) => this.newValueOnInput = e.target.value
+        if (this.editInput) {
+            this.editInput.onchange = (e: Event) => this.newValueOnInput = (e.target as HTMLInputElement)?.value
+        }
 
-        document.getElementById('save-edit-btn').onclick = () => this.saveEdit()
+        if (saveEditBtn) {
+            saveEditBtn.onclick = () => this.saveEdit()
+        }
 
-        document.getElementById('cancel-btn').onclick = () => location.href = `#/${this.page}`
+        if (cancelBtn) {
+            cancelBtn.onclick = () => location.href = `#/${this.page}`
+        }
     }
 
-    async saveEdit() {
+    private async saveEdit(): Promise<void> {
         try {
-            const result = await CustomHttp.request(`${config.host}/categories/${this.page}/${this.editCardId}`, 'PUT', {
+            const result: DefaultResponseType = await CustomHttp.request(`${config.host}/categories/${this.page}/${this.editCardId}`, 'PUT', {
                 title: this.newValueOnInput
             })
             if (result) location.href = `#/${this.page}`

@@ -1,10 +1,17 @@
 import {CustomHttp} from "../../../services/custom-http";
 import config from "../../../config/config";
 import {Auth} from "../../../services/auth";
+import {DefaultResponseType, FieldsType, LoginResponseType, SignupResponseType} from "../../../types";
 
 export class FormAuth {
 
-    constructor(page) {
+    readonly page: 'signup' | 'login'
+    readonly agreeElement: HTMLElement | null
+    readonly processButton: HTMLElement | null
+    private remember: HTMLElement | null
+    private fields: FieldsType[] = []
+
+    constructor(page: 'signup' | 'login') {
         this.page = page
         this.agreeElement = document.getElementById('agree')
         this.processButton = document.getElementById('process')
@@ -53,45 +60,61 @@ export class FormAuth {
             )
         }
 
-        document.getElementById('eye').onclick = () => {
-            viewPassword()
+        const eyeElement: HTMLElement | null = document.getElementById('eye')
+
+        if (eyeElement) {
+            eyeElement.onclick = () => {
+                viewPassword()
+            }
         }
 
-        function viewPassword() {
+
+        function viewPassword(): void {
             let inputPassword = document.getElementById("password");
-            if (inputPassword.getAttribute('type') === 'password') {
-                inputPassword.setAttribute('type', 'text')
-            } else {
-                inputPassword.setAttribute('type', 'password')
+            if (inputPassword) {
+                if (inputPassword.getAttribute('type') === 'password') {
+                    inputPassword.setAttribute('type', 'text')
+                } else {
+                    inputPassword.setAttribute('type', 'password')
+                }
             }
 
             setTimeout(() => {
-                inputPassword.setAttribute('type', 'password')
+                if (inputPassword) {
+                    inputPassword.setAttribute('type', 'password')
+                }
             }, 1900)
         }
 
-        const that = this;
+        const that: FormAuth = this;
 
-        this.fields.forEach(item => {
-            item.element = document.getElementById(item.id)
+        this.fields.forEach((item: FieldsType) => {
+            item.element = document.getElementById(item.id) as HTMLInputElement
 
-            item.element.onchange = function () {
-                that.validateField.call(that, item, this)
+            if (item.element) {
+                item.element.onchange = function () {
+                    that.validateField.call(that, item, <HTMLInputElement>this)
+                }
             }
         })
 
-        this.processButton.onclick = function () {
-            that.processSignup()
+        if (this.processButton) {
+            this.processButton.onclick = function () {
+                that.processSignup()
+            }
         }
 
+
         if (page === 'signup') {
-            this.agreeElement.onchange = function () {
-                that.validateForm()
+            if (this.agreeElement) {
+                this.agreeElement.onchange = function () {
+                    that.validateForm()
+                }
             }
         }
     }
 
-    validateField(field, element) {
+    private validateField(field: FieldsType, element: HTMLInputElement): void {
         if (!element.value || !element.value.match(field.regex)) {
             element.style.borderColor = 'red'
             field.valid = false
@@ -103,21 +126,25 @@ export class FormAuth {
         this.validateForm()
     }
 
-    validateForm() {
-        const validForm = this.fields.every((item) => item.valid)
-        let passwordRepeat = null
+    private validateForm(): boolean {
+        const validForm: boolean = this.fields.every((item) => item.valid)
 
-        const password = this.fields.find(item => item.name === 'password').element.value
+        let passwordRepeat: string | undefined
+
+        const password = this.fields.find(item => item.name === 'password')?.element?.value
         if (this.page === 'signup') {
-            passwordRepeat = this.fields.find(item => item.name === 'password-repeat').element.value
+            passwordRepeat = this.fields.find(item => item.name === 'password-repeat')?.element?.value
         }
 
-        const isValid = this.agreeElement ? this.agreeElement.checked && validForm : validForm
 
-        if (isValid) {
-            this.processButton.removeAttribute('disabled')
-        } else {
-            this.processButton.setAttribute('disabled', 'disabled')
+        const isValid: boolean = this.agreeElement ? (this.agreeElement as HTMLInputElement).checked && validForm : validForm
+
+        if (this.processButton) {
+            if (isValid) {
+                this.processButton.removeAttribute('disabled')
+            } else {
+                this.processButton.setAttribute('disabled', 'disabled')
+            }
         }
 
         if (password && passwordRepeat) {
@@ -127,56 +154,65 @@ export class FormAuth {
                 alert('Пароли не совпадают')
             }
         }
+        return false
     }
 
-    async processSignup() {
+    private async processSignup(): Promise<void> {
 
-        const email = this.fields.find(item => item.name === 'email').element.value
-        const password = this.fields.find(item => item.name === 'password').element.value
+        const email = this.fields.find(item => item.name === 'email')?.element?.value
+        const password = this.fields.find(item => item.name === 'password')?.element?.value
 
         if (this.page === 'signup') {
-            const fio = this.fields.find(item => item.name === 'name').element.value
-            const arrFio = fio.split(' ')
-            try {
-                const result = await CustomHttp.request(`${config.host}/signup`, 'POST', {
-                    name: arrFio[1],
-                    lastName: arrFio[0],
-                    email: email,
-                    password: password,
-                    passwordRepeat: this.fields.find(item => item.name === 'password-repeat').element.value
-                })
+            const fio = this.fields.find(item => item.name === 'name')?.element?.value
+            const arrFio: string[] | null = fio ? fio?.split(' ') : null
 
-                if (result) {
-                    if (result.error) {
-                        console.log(result.message)
-                        if (result.validation[0].message) {
-                            console.log(result.validation[0].message)
+            if (arrFio) {
+                try {
+                    const result: SignupResponseType | DefaultResponseType = await CustomHttp.request(`${config.host}/signup`, 'POST', {
+                        name: arrFio[1],
+                        lastName: arrFio[0],
+                        email: email,
+                        password: password,
+                        passwordRepeat: this.fields.find(item => item.name === 'password-repeat')?.element?.value
+                    })
+
+                    if ((result as DefaultResponseType)) {
+                        if ((result as DefaultResponseType).error) {
+                            console.log((result as DefaultResponseType).message)
+                            if ((result as DefaultResponseType) && (result as DefaultResponseType).validation) {
+                                // @ts-ignore
+                                console.log((result as DefaultResponseType).validation[0].message)
+                            }
+
+                            if ((result as DefaultResponseType)) {
+                                throw new Error((result as DefaultResponseType).message)
+
+                            }
+                        } else if ((result as SignupResponseType).user) {
+                            console.log('Registration completed successfully')
+                            window.location.href = "#/main"
                         }
-                        throw new Error(result.message)
-                    } else if (result.user) {
-                        console.log('Registration completed successfully')
-                        window.location.href = "#/main"
                     }
+                } catch (e) {
+                    console.log("Ошибка signup")
+                    return
                 }
-            } catch (e) {
-                console.log("Ошибка signup")
-                return
-            }
+        }
         }
         try {
-            const result = await CustomHttp.request(`${config.host}/login`, 'POST', {
+            const result: LoginResponseType | DefaultResponseType = await CustomHttp.request(`${config.host}/login`, 'POST', {
                 email: email,
                 password: password,
-                rememberMe: this.remember?.checked || false
+                rememberMe: (this.remember as HTMLInputElement)?.checked || false
             })
 
             if (result) {
-                if (result.error) {
-                    console.log(result.message)
-                    throw new Error(result.message)
+                if ((result as DefaultResponseType).error) {
+                    console.log((result as DefaultResponseType).message)
+                    throw new Error((result as DefaultResponseType).message)
                 }
-                Auth.setTokens(result.tokens.accessToken, result.tokens.refreshToken)
-                Auth.setUserInfo(result.user)
+                Auth.setTokens((result as LoginResponseType).tokens.accessToken, (result as LoginResponseType).tokens.refreshToken)
+                Auth.setUserInfo((result as LoginResponseType).user)
                 console.log("Вы успешно вошли в аккаунт!")
                 location.href = '#/main'
             }

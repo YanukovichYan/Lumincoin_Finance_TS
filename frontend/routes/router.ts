@@ -1,12 +1,22 @@
-import {Category} from "../src/scripts/incomes-and-expenses/category.ts";
-import {Auth} from "../services/auth.ts";
-import {Edit} from "../src/scripts/incomes-and-expenses/edit.ts";
-import {TableCategories} from "../src/scripts/table-categories/table-categories.ts";
-import {Form} from "../src/scripts/table-categories/form.ts";
-import {Main} from "../src/scripts/main/main.ts";
-import {FormAuth} from "../src/scripts/auth/form-auth.ts";
+import {Category} from "../src/scripts/incomes-and-expenses/category";
+import {Auth} from "../services/auth";
+import {Edit} from "../src/scripts/incomes-and-expenses/edit";
+import {TableCategories} from "../src/scripts/table-categories/table-categories";
+import {Form} from "../src/scripts/table-categories/form";
+import {Main} from "../src/scripts/main/main";
+import {FormAuth} from "../src/scripts/auth/form-auth";
+import {RouteType, UserInfoType} from "../types";
 
 export class Router {
+
+    readonly contentElement: HTMLElement | null
+    readonly pageTitleElement: HTMLElement | null
+    readonly mainTitleElement: HTMLElement | null
+    readonly profileElement: HTMLElement | null
+    readonly profileNameElement: HTMLElement | null
+
+    public routes: RouteType[]
+
     constructor() {
         this.contentElement = document.getElementById('content')
         this.pageTitleElement = document.getElementById('page-title')
@@ -115,10 +125,10 @@ export class Router {
     }
 
 
-    async openRoute() {
-        const urlRoute = window.location.hash.split('?')[0]
+    public async openRoute(): Promise<void> {
+        const urlRoute: string = window.location.hash.split('?')[0]
 
-        let accessTokenKey = localStorage.getItem(Auth.accessTokenKey)
+        let accessTokenKey: string | null = localStorage.getItem(Auth.accessTokenKey)
 
         if (accessTokenKey === null && urlRoute !== '#/login' && urlRoute !== '#/signup') {
             console.log('Нет токенов, необходимо войти или зарегистрироваться')
@@ -127,12 +137,14 @@ export class Router {
         }
 
         if (urlRoute === '#/logout') {
-            await Auth.logout()
-            window.location.href = '#/login'
-            return
+            const result: boolean = await Auth.logout()
+            if (result) {
+                window.location.href = '#/login'
+                return
+            }
         }
 
-        const newRoute = this.routes.find(item => {
+        const newRoute: RouteType | undefined = this.routes.find((item: RouteType) => {
             return item.route === urlRoute
         });
 
@@ -142,37 +154,50 @@ export class Router {
             return
         }
 
-
-        this.contentElement.innerHTML =
-            await fetch(newRoute.template).then(response => response.text())
+        if (this.contentElement) {
+            this.contentElement.innerHTML =
+                await fetch(newRoute.template).then(response => response.text())
+        }
 
         newRoute.load()
 
-        this.pageTitleElement.innerText = newRoute.title
+        if (this.pageTitleElement) {
+            this.pageTitleElement.innerText = newRoute.title
+        }
 
-        this.mainTitleElement.innerText = newRoute.title
-
-        const userInfo = Auth.getUserInfo()
-        const accessToken = localStorage.getItem(Auth.accessTokenKey)
-
-        if (userInfo && accessToken) {
-            this.profileElement.style.display = 'block'
-            this.profileNameElement.innerText = userInfo.name
-        } else {
-            this.profileElement.style.display = 'none '
+        if (this.mainTitleElement) {
+            this.mainTitleElement.innerText = newRoute.title
         }
 
 
-        if (urlRoute === '#/login' || urlRoute === '#/signup') {
-            document.getElementById('sidebar').style.cssText = 'display:none!important'
-            document.getElementById('wrapper').style.cssText = 'display:block!important'
-            document.getElementById('wrapper-content').style.cssText = `margin:0!important; padding:0!important`
-            this.mainTitleElement.style.cssText = 'display:none!important'
-        } else {
-            document.getElementById('sidebar').style.cssText = 'display:flex!important'
-            document.getElementById('wrapper').style.cssText = 'display:flex!important'
-            document.getElementById('wrapper-content').style.cssText = `margin:unset; padding:unset`
-            this.mainTitleElement.style.cssText = 'display:block!important'
+        const userInfo: UserInfoType | null = Auth.getUserInfo()
+        const accessToken: string | null = localStorage.getItem(Auth.accessTokenKey)
+
+        if (this.profileElement && this.profileNameElement) {
+            if (userInfo && accessToken) {
+                this.profileElement.style.display = 'block'
+                this.profileNameElement.innerText = userInfo.name
+            } else {
+                this.profileElement.style.display = 'none '
+            }
+        }
+
+        const sidebarElement = document.getElementById('sidebar')
+        const wrapperElement = document.getElementById('wrapper')
+        const wrapperContentElement = document.getElementById('wrapper-content')
+
+        if (sidebarElement && wrapperElement && wrapperContentElement && this.mainTitleElement) {
+            if (urlRoute === '#/login' || urlRoute === '#/signup') {
+                sidebarElement.style.cssText = 'display:none!important'
+                wrapperElement.style.cssText = 'display:block!important'
+                wrapperContentElement.style.cssText = `margin:0!important; padding:0!important`
+                this.mainTitleElement.style.cssText = 'display:none!important'
+            } else {
+                sidebarElement.style.cssText = 'display:flex!important'
+                wrapperElement.style.cssText = 'display:flex!important'
+                wrapperContentElement.style.cssText = `margin:unset; padding:unset`
+                this.mainTitleElement.style.cssText = 'display:block!important'
+            }
         }
     }
 }

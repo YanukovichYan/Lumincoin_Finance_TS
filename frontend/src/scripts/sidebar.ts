@@ -4,7 +4,7 @@ import config from "../../config/config";
 
 export class Sidebar {
 
-    public static async getBalance(): Promise<number | null> {
+    public static async getBalance(): Promise<number> {
         const balanceElement = document.getElementById('balance')
         if (localStorage.getItem(Auth.accessTokenKey)) {
             try {
@@ -18,7 +18,7 @@ export class Sidebar {
 
             }
         }
-        return null
+        return 0
     }
 
     public static async updateBalance(newBalance: number): Promise<void> {
