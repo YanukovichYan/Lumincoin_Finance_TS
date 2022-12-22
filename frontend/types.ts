@@ -70,3 +70,5 @@ export type CreateOperationFormType = {
     comment: string
     category_id: number
 }
+
+export type newObjectWithSeparate = {[key: string]: Operation[]}

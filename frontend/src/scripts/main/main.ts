@@ -1,13 +1,34 @@
 import config from "../../../config/config";
 import {CustomHttp} from "../../../services/custom-http";
 import {Sidebar} from "../sidebar";
+import {DefaultResponseType, newObjectWithSeparate, Operation} from "../../../types";
 
 export class Main {
 
+    readonly chartIncome: CanvasRenderingContext2D | null
+    readonly chartExpense: CanvasRenderingContext2D | null
+
+    readonly dateToday: string
+    private filterValue: string
+
+    private dateInterval: string
+    private btnFilterClick: HTMLElement | null
+
+    private categoriesIncome: string[]
+    private categoriesExpense: string[]
+
+    private operations: Operation[] | []
+
+    private incomeDataAmount: number[]
+    private expenseDataAmount: number[]
+
+    private myChartIncome: null
+    private myChartExpense: null
+
     constructor() {
 
-        this.chartIncome = document.getElementById('chart-income').getContext('2d')
-        this.chartExpense = document.getElementById('chart-expense').getContext('2d')
+        this.chartIncome = (document.getElementById('chart-income') as HTMLCanvasElement)?.getContext('2d')
+        this.chartExpense = (document.getElementById('chart-expense') as HTMLCanvasElement)?.getContext('2d')
 
         this.dateToday = `${new Date().getFullYear()}-${(new Date().getMonth()) + 1}-${new Date().getDate()}`
         this.filterValue = `interval&dateFrom=${this.dateToday}&dateTo=${this.dateToday}`
@@ -29,36 +50,37 @@ export class Main {
         this.intervalInit()
     }
 
-    intervalInit() {
+    private intervalInit(): void {
 
-        const dateFrom = document.getElementById('date-from')
-        const dateTo = document.getElementById('date-to')
-        const dateInterval = document.getElementById('date-interval')
+        const dateFrom: HTMLElement | null = document.getElementById('date-from')
+        const dateTo: HTMLElement | null = document.getElementById('date-to')
+        const dateInterval: HTMLElement | null = document.getElementById('date-interval')
 
-
-        dateInterval.onchange = () => {
-            const dateInterval = `&dateFrom=${dateFrom.value}&dateTo=${dateTo.value}`
-            if (dateFrom.value && dateTo.value) {
-                this.dateInterval = dateInterval
-                this.getDataTable()
-                console.log('this.dateInterval', this.dateInterval)
-                console.log('Получили данные, отправляем запрос')
+        if (dateInterval) {
+            dateInterval.onchange = () => {
+                const dateInterval: string = `&dateFrom=${(dateFrom as HTMLInputElement)?.value}&dateTo=${(dateTo as HTMLInputElement)?.value}`
+                if ((dateFrom as HTMLInputElement)?.value && (dateTo as HTMLInputElement)?.value) {
+                    this.dateInterval = dateInterval
+                    this.getDataTable()
+                    console.log('this.dateInterval', this.dateInterval)
+                    console.log('Получили данные, отправляем запрос')
+                }
             }
         }
+
         this.showFilterBtn()
         this.getDataTable()
     }
 
-    async getDataTable() {
+    private async getDataTable(): Promise<void> {
         if (this.filterValue === 'interval' && this.dateInterval === '') {
             return
         }
         try {
-            const result = await CustomHttp.request(`${config.host}/operations?period=${this.filterValue}${this.dateInterval}`)
+            const result: Operation[] | DefaultResponseType = await CustomHttp.request(`${config.host}/operations?period=${this.filterValue}${this.dateInterval}`)
             if (result) {
-                this.operations = result
+                this.operations = result as Operation[]
                 await Sidebar.getBalance()
-                // console.log('this.operations', this.operations)
                 this.separationCategories()
             }
         } catch (e) {
@@ -66,10 +88,10 @@ export class Main {
         }
     }
 
-    showFilterBtn() {
-        let active = true;
-        config.dataBtn.forEach((btn, index) => {
-            const filterBtn = document.createElement('button')
+    private showFilterBtn(): void {
+        let active: boolean = true;
+        config.dataBtn.forEach((btn: string, index: number) => {
+            const filterBtn: HTMLElement = document.createElement('button')
             filterBtn.innerText = btn
             filterBtn.setAttribute('data-name', 'filter')
             filterBtn.className = 'btn btn-light border border-secondary me-3 px-3'
@@ -80,13 +102,12 @@ export class Main {
             }
 
             filterBtn.addEventListener('click', () => {
-                // console.log(filterBtn)
                 active = false
                 this.btnFilterClick = filterBtn
                 this.dateInterval = ''
 
-                let allFilterBtn = document.querySelectorAll('button[data-name="filter"]')
-                allFilterBtn.forEach(el => {
+                let allFilterBtn: NodeListOf<Element> | null = document.querySelectorAll('button[data-name="filter"]')
+                allFilterBtn.forEach((el: Element) => {
                     el.classList.add('btn-light')
                     el.classList.remove('btn-secondary')
                 })
@@ -101,12 +122,16 @@ export class Main {
                 this.expenseDataAmount = []
                 this.selectOperationsWithFilter()
             })
-            document.getElementById('btn-wrapper').appendChild(filterBtn)
+            const btnWrapperElement = document.getElementById('btn-wrapper')
+
+            if (btnWrapperElement) {
+                btnWrapperElement.appendChild(filterBtn)
+            }
         })
     }
 
-    selectOperationsWithFilter() {
-        switch (this.btnFilterClick.innerText) {
+    private selectOperationsWithFilter(): void {
+        switch (this.btnFilterClick?.innerText) {
             case 'Сегодня':
                 this.filterValue = `interval&dateFrom=${this.dateToday}&dateTo=${this.dateToday}`
                 break
@@ -129,7 +154,7 @@ export class Main {
         this.getDataTable()
     }
 
-    incomeChartShow() {
+    private incomeChartShow(): void {
 
         if (this.myChartIncome != null) {
             this.myChartIncome.destroy()
@@ -187,18 +212,16 @@ export class Main {
         })
     }
 
-    separationCategories() {
-        const incomeOperation = this.operations.filter((el) => {
+    private separationCategories(): void {
+        const incomeOperation: Operation[] = this.operations.filter((el: Operation) => {
             return el.type === 'income'
         })
-        const expenseOperation = this.operations.filter((el) => {
+
+        const expenseOperation: Operation[] = this.operations.filter((el) => {
             return el.type === 'expense'
         })
 
-        console.log('incomeOperation', incomeOperation)
-        console.log('expenseOperation', expenseOperation)
-
-        const newObjectIncome = incomeOperation.reduce((object, operation) => {
+        const newObjectIncome: newObjectWithSeparate = incomeOperation.reduce((object: newObjectWithSeparate, operation: Operation) => {
             if (object[operation.category]) {
                 object[operation.category].push(operation)
             } else {
@@ -207,7 +230,7 @@ export class Main {
             return object
         }, {})
 
-        const newObjectExpense = expenseOperation.reduce((object, operation) => {
+        const newObjectExpense: newObjectWithSeparate = expenseOperation.reduce((object: newObjectWithSeparate, operation: Operation) => {
             if (object[operation.category]) {
                 object[operation.category].push(operation)
             } else {
@@ -216,41 +239,29 @@ export class Main {
             return object
         }, {})
 
-        console.log('newObjectIncome', newObjectIncome)
-        console.log('newObjectExpense', newObjectExpense)
-
-        console.log('Object.entries(income)', Object.entries(newObjectIncome))
-        console.log('Object.entries(expense)', Object.entries(newObjectExpense))
-
-        Object.entries(newObjectIncome).forEach(category => {
-            this.categoriesIncome.push(category[0])
+        Object.entries(newObjectIncome).forEach((category: [string, Operation[]]) => {
+            return this.categoriesIncome.push(category[0]);
         })
 
-        Object.entries(newObjectExpense).forEach(category => {
-            this.categoriesExpense.push(category[0])
+        Object.entries(newObjectExpense).forEach((category: [string, Operation[]]) => {
+            return this.categoriesExpense.push(category[0]);
         })
 
-        console.log('this.categoriesIncome', this.categoriesIncome)
-        console.log('this.categoriesExpense', this.categoriesExpense)
-
         Object.entries(newObjectIncome).forEach(category => {
-            let amount = 0
-            category[1].forEach(operation => {
+            let amount: number = 0
+            category[1].forEach((operation: Operation) => {
                 amount += operation.amount
             })
             this.incomeDataAmount.push(amount)
         })
 
         Object.entries(newObjectExpense).forEach(category => {
-            let amount = 0
-            category[1].forEach(operation => {
+            let amount: number = 0
+            category[1].forEach((operation: Operation) => {
                 amount += operation.amount
             })
             this.expenseDataAmount.push(amount)
         })
-
-        console.log('incomeDataAmount', this.incomeDataAmount)
-        console.log('expenseDataAmount', this.expenseDataAmount)
 
         if (this.incomeDataAmount.length) {
             this.incomeChartShow()
@@ -260,12 +271,19 @@ export class Main {
             this.expenseChartShow()
         }
 
+        const mainElement = document.getElementById('main')
+        const emptyBlock = document.getElementById('empty-block')
+
         if (this.incomeDataAmount.length === 0 && this.expenseDataAmount.length === 0) {
-            document.getElementById('main').style.display = 'none'
-            document.getElementById('empty-block').style.display = 'block'
+            if (mainElement && emptyBlock) {
+                mainElement.style.display = 'none'
+                emptyBlock.style.display = 'block'
+            }
         } else {
-            document.getElementById('main').style.display = 'block'
-            document.getElementById('empty-block').style.display = 'none'
+            if (mainElement && emptyBlock) {
+                mainElement.style.display = 'block'
+                emptyBlock.style.display = 'none'
+            }
         }
     }
 }
