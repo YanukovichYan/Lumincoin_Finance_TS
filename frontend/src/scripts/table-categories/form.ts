@@ -10,8 +10,8 @@ export class Form {
     private createFormValue: CreateOperationFormType | {}
     private optionById: Operation | {}
     private optionId: number
-    readonly urlParams: number
-    private urlSelectType: string | number
+    readonly urlParams: string | number
+    private urlSelectType: string | number | null
     private value: number
 
     private getType: 'income' | 'expense'
@@ -28,11 +28,13 @@ export class Form {
         this.createFormValue = {}
         this.optionById = {}
         this.optionId = 0
-        this.urlParams = Number(window.location.href.split('=')[1])
-        this.urlSelectType = 'create'
+        this.urlParams = window.location.href.split('=')[1]
+        this.urlSelectType = null
         this.value = 0
 
-        if (this.page === 'create') this.urlSelectType = this.urlParams
+        if (this.page === 'create') {
+            this.urlSelectType = this.urlParams
+        }
 
         this.getType = 'income'
         this.selectType = document.getElementById('select-type')
@@ -79,6 +81,7 @@ export class Form {
 
     private editFormValue(): void {
         if ('type' in this.optionById && this.selectType) {
+
             this.optionById.type === 'income' ? (this.selectType as HTMLSelectElement).selectedIndex = 1 : (this.selectType as HTMLSelectElement).selectedIndex = 2
             this.optionById.type === 'income' ? this.getType = 'income' : this.getType = 'expense'
             this.urlSelectType = this.getType

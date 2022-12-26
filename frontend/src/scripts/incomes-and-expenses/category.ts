@@ -41,7 +41,6 @@ export class Category {
             if (result) {
                 this.categories = result
                 if (result.length === 0 && emptyBlockElement) {
-                    console.log('Категория пуста!')
                     emptyBlockElement.style.cssText = 'display:block!important'
                 }
                 if (cardWrapperElement) {

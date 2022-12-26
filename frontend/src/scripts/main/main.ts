@@ -2,9 +2,11 @@ import config from "../../../config/config";
 import {CustomHttp} from "../../../services/custom-http";
 import {Sidebar} from "../sidebar";
 import {DefaultResponseType, newObjectWithSeparate, Operation} from "../../../types";
+import Chart from "chart.js";
+
+
 
 export class Main {
-
     readonly chartIncome: CanvasRenderingContext2D | null
     readonly chartExpense: CanvasRenderingContext2D | null
 
@@ -22,8 +24,8 @@ export class Main {
     private incomeDataAmount: number[]
     private expenseDataAmount: number[]
 
-    private myChartIncome: null
-    private myChartExpense: null
+    private myChartIncome: Chart | null
+    private myChartExpense: Chart | null
 
     constructor() {
 
@@ -187,6 +189,7 @@ export class Main {
 
         if (this.myChartExpense != null) {
             this.myChartExpense.destroy()
+
         }
 
         this.myChartExpense = new Chart(this.chartExpense, {

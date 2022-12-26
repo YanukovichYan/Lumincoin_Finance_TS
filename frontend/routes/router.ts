@@ -3,9 +3,9 @@ import {Auth} from "../services/auth";
 import {Edit} from "../src/scripts/incomes-and-expenses/edit";
 import {TableCategories} from "../src/scripts/table-categories/table-categories";
 import {Form} from "../src/scripts/table-categories/form";
-import {Main} from "../src/scripts/main/main";
 import {FormAuth} from "../src/scripts/auth/form-auth";
 import {RouteType, UserInfoType} from "../types";
+import {Main} from "../src/scripts/main/main";
 
 export class Router {
 

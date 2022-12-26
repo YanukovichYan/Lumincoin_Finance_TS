@@ -213,7 +213,6 @@ export class FormAuth {
                 }
                 Auth.setTokens((result as LoginResponseType).tokens.accessToken, (result as LoginResponseType).tokens.refreshToken)
                 Auth.setUserInfo((result as LoginResponseType).user)
-                console.log("Вы успешно вошли в аккаунт!")
                 location.href = '#/main'
             }
 

@@ -10,7 +10,7 @@ export class TableCategories {
     private operations: Operation[] | null
     private removeOptionId: number | null
     private btnEditId: number | null
-    private dateInterval: string | ''
+    private dateInterval: string | null
     private btnFilterClick: HTMLElement | null
     private optionById: Operation | null
     private value: number | null
@@ -22,7 +22,7 @@ export class TableCategories {
         this.operations = null
         this.removeOptionId = null
         this.btnEditId = null
-        this.dateInterval = ''
+        this.dateInterval = null
         this.btnFilterClick = null
         this.optionById = null
         this.value = null
@@ -49,7 +49,7 @@ export class TableCategories {
         if (dateIntervalElement) {
             dateIntervalElement.onchange = () => {
                 if (dateFrom.value && dateTo.value) {
-                    this.dateInterval = `&dateFrom=${dateFrom.value}&dateTo=${dateTo.value}`
+                    this.dateInterval = `interval&dateFrom=${dateFrom.value}&dateTo=${dateTo.value}`
                     this.getDataTable()
 
                     console.log('Получили данные, отправляем запрос')
@@ -62,14 +62,15 @@ export class TableCategories {
     }
 
     private async getDataTable(): Promise<void> {
-        await Sidebar.getBalance()
 
-        if (this.dateInterval === '' && this.filterValue === '') {
+        if (this.filterValue === 'interval' && !this.dateInterval) {
             return
         }
+        await Sidebar.getBalance()
 
         try {
             const result: Operation[] | [] = await CustomHttp.request(`${config.host}/operations?period=${!this.dateInterval ? this.filterValue : ''}${this.dateInterval}`)
+
 
             if (result) {
                 this.operations = result
@@ -77,9 +78,6 @@ export class TableCategories {
                     this.tbodyElement.innerHTML = ' '
                 }
                 this.showTable()
-            }
-            if (result.length === 0) {
-                // await Sidebar.getBalance()
             }
         } catch (e) {
             console.log(e)
@@ -288,7 +286,7 @@ export class TableCategories {
             const result: DefaultResponseType = await CustomHttp.request(`${config.host}/operations/${this.removeOptionId}`, 'DELETE')
             if (result) {
                 if (!result.error) {
-                    console.log(result.message)
+                    // console.log(result.message)
                     if (this.value) {
                         await Sidebar.updateBalance(this.value)
                     }

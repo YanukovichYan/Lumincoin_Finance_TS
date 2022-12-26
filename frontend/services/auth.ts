@@ -40,7 +40,6 @@ export class Auth {
         if (response && response.status === 200) {
             const result: DefaultResponseType = await response.json()
             if (result && !result.error) {
-                alert("Вы вышли из аккаунта")
                 this.removeTokens()
                 localStorage.removeItem(Auth.userInfoKey)
                 return true
