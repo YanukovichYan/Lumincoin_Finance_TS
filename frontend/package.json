@@ -13,6 +13,7 @@
   "license": "ISC",
   "devDependencies": {
     "@types/chart.js": "^2.9.37",
+    "chart.js": "^4.1.1",
     "copy-webpack-plugin": "^11.0.0",
     "html-webpack-plugin": "^5.5.0",
     "http-server": "^14.1.1",
