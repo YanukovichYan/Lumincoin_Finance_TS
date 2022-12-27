@@ -22,7 +22,7 @@ export class TableCategories {
         this.operations = null
         this.removeOptionId = null
         this.btnEditId = null
-        this.dateInterval = null
+        this.dateInterval = ''
         this.btnFilterClick = null
         this.optionById = null
         this.value = null
@@ -70,7 +70,6 @@ export class TableCategories {
 
         try {
             const result: Operation[] | [] = await CustomHttp.request(`${config.host}/operations?period=${!this.dateInterval ? this.filterValue : ''}${this.dateInterval}`)
-
 
             if (result) {
                 this.operations = result
