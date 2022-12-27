@@ -2,13 +2,12 @@ import config from "../../../config/config";
 import {CustomHttp} from "../../../services/custom-http";
 import {Sidebar} from "../sidebar";
 import {DefaultResponseType, newObjectWithSeparate, Operation} from "../../../types";
-import Chart from "chart.js";
-
+import Chart from 'chart.js/auto'
 
 
 export class Main {
-    readonly chartIncome: CanvasRenderingContext2D | null
-    readonly chartExpense: CanvasRenderingContext2D | null
+    readonly chartIncome: CanvasRenderingContext2D | any
+    readonly chartExpense: CanvasRenderingContext2D | any
 
     readonly dateToday: string
     private filterValue: string
@@ -164,7 +163,6 @@ export class Main {
 
         this.myChartIncome = new Chart(this.chartIncome, {
             type: 'pie',
-            responsive: false,
             data: {
                 labels: this.categoriesIncome,
                 datasets: [{
@@ -194,7 +192,6 @@ export class Main {
 
         this.myChartExpense = new Chart(this.chartExpense, {
             type: 'pie',
-            responsive: false,
             data: {
                 labels: this.categoriesExpense,
                 datasets: [{
